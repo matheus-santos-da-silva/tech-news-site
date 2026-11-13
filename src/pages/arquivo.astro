@@ -1,7 +1,8 @@
 ---
 import Base from "../layouts/Base.astro";
+import DayHeader from "../components/DayHeader.astro";
 import RichText from "../components/RichText.astro";
-import { allDigests, dayUrl, weekday, withBase } from "../lib/digests";
+import { allDigests, dayUrl, weekday } from "../lib/digests";
 
 const all = allDigests();
 const byMonth = new Map<string, typeof all>();
@@ -13,13 +14,11 @@ for (const d of all) {
 const monthLabel = (ym: string) =>
   new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", month: "long", year: "numeric" }).format(new Date(`${ym}-15T12:00:00Z`));
 ---
-<Base title="Todos os dias · Tech News" description="Arquivo de todos os resumos diários de tecnologia.">
-  <header class="wrap head">
-    <a class="brand" href={withBase("")}>Tech News</a>
-    <h1>Todos os dias</h1>
-    <p>{all.length} resumos, do mais recente ao mais antigo.</p>
-  </header>
-  <main id="conteudo" class="wrap">
+<Base title="Todas as edições · Tech News" description="Arquivo de todos os resumos diários de tecnologia.">
+  <DayHeader />
+  <main id="conteudo" class="page">
+    <h1>Todas as edições</h1>
+    <p class="sub">{all.length} edições, da mais recente à mais antiga.</p>
     {[...byMonth].map(([ym, days]) => (
       <section aria-labelledby={`m-${ym}`}>
         <h2 id={`m-${ym}`}>{monthLabel(ym)}</h2>
@@ -28,7 +27,7 @@ const monthLabel = (ym: string) =>
             <li>
               <a href={dayUrl(d.date)}>
                 <span class="day">{Number(d.date.slice(8))}</span>
-                <span class="meta">{weekday(d.date)}, {d.items.length} notícias</span>
+                <span class="meta">{weekday(d.date)} · {d.items.length} notícias</span>
                 <span class="lead"><RichText text={d.tldr[0].text} /></span>
               </a>
             </li>
@@ -40,39 +39,28 @@ const monthLabel = (ym: string) =>
 </Base>
 
 <style>
-  .head { padding-top: 1rem; }
-  .brand { font-weight: 750; font-stretch: 112%; text-decoration: none; }
-  h1 {
-    margin: 2.25rem 0 0.25rem;
-    font-size: clamp(2.5rem, 9vw, 4.5rem);
-    font-weight: 800;
-    font-stretch: 125%;
-    letter-spacing: -0.03em;
-    line-height: 0.95;
+  main { max-width: 48rem; }
+  h1 { margin: 2rem 0 0.25rem; font: 500 clamp(2rem, 6vw, 2.8rem)/1.05 var(--serif); letter-spacing: -0.015em; }
+  .sub { margin: 0; color: var(--muted); font: 400 0.85rem/1.4 var(--sans); }
+  h2 {
+    margin: 2.25rem 0 0;
+    padding-top: 0.4rem;
+    border-top: 2px solid var(--rule-strong);
+    font: 700 0.95rem/1.2 var(--sans);
   }
-  .head p { color: var(--muted); margin: 0.5rem 0 0; }
-  h2 { margin: 2.5rem 0 0.5rem; font-size: var(--t-lg); font-weight: 750; }
   h2::first-letter { text-transform: uppercase; }
   ol { list-style: none; margin: 0; padding: 0; }
-  li { border-top: 1px solid var(--line); }
+  li + li { border-top: 1px solid var(--rule); }
   li a {
     display: grid;
-    grid-template-columns: 3.25rem 1fr;
+    grid-template-columns: 3rem 1fr;
     grid-template-areas: "day meta" "day lead";
-    gap: 0.1rem 0.75rem;
+    gap: 0.15rem 0.9rem;
     padding: 0.9rem 0;
-    text-decoration: none;
   }
-  li a:hover .lead { text-decoration: underline; }
-  .day {
-    grid-area: day;
-    font-size: 2rem;
-    font-weight: 800;
-    font-stretch: 125%;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-  .meta { grid-area: meta; font-size: var(--t-sm); color: var(--muted); }
+  li a:hover .lead { color: var(--link-hover); }
+  .day { grid-area: day; font: 500 2.1rem/1 var(--serif); font-variant-numeric: lining-nums tabular-nums; }
+  .meta { grid-area: meta; font: 500 0.75rem/1.3 var(--sans); color: var(--muted); }
   .meta::first-letter { text-transform: uppercase; }
-  .lead { grid-area: lead; font-family: var(--serif); line-height: 1.45; }
+  .lead { grid-area: lead; font-size: 1rem; line-height: 1.45; }
 </style>

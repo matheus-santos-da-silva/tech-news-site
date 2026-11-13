@@ -36,7 +36,7 @@ const csp = [
   <body>
     <a class="skip visually-hidden" href="#conteudo">Pular para as notícias</a>
     <slot />
-    <footer class="wrap site-footer">
+    <footer class="page site-footer">
       <p>
         Resumo diário gerado por IA a partir das fontes citadas em cada notícia. Confira a fonte antes de tomar decisões.
       </p>
@@ -57,16 +57,17 @@ const csp = [
     top: 0.5rem; left: 0.5rem;
     width: auto; height: auto; clip: auto;
     padding: 0.5rem 0.75rem;
-    background: var(--surface);
+    background: var(--paper);
     z-index: 10;
   }
   .site-footer {
-    margin-top: 4rem;
-    padding-block: 2rem 3rem;
+    margin-top: 3.5rem;
+    padding-block: 1rem 3rem;
     color: var(--muted);
-    font-size: var(--t-sm);
-    border-top: 1px solid var(--line);
+    font: 400 0.78rem/1.5 var(--sans);
+    border-top: 3px double var(--rule-strong);
   }
-  .site-footer p { margin: 0 0 0.5rem; }
+  .site-footer p { margin: 0 0 0.4rem; }
+  .site-footer a { text-decoration: underline; text-decoration-color: var(--rule); }
   .site-footer span { margin-inline: 0.4rem; }
 </style>

@@ -1,15 +1,18 @@
 ---
 import Base from "../layouts/Base.astro";
+import DayHeader from "../components/DayHeader.astro";
 import { withBase } from "../lib/digests";
 ---
 <Base title="Página não encontrada · Tech News" description="Página não encontrada.">
-  <main id="conteudo" class="wrap nf">
-    <h1>Não existe resumo neste endereço</h1>
-    <p>O dia pode não ter tido resumo ou o link está incompleto.</p>
-    <p><a href={withBase("")}>Abrir o resumo mais recente</a> ou <a href={withBase("arquivo/")}>ver todos os dias</a>.</p>
+  <DayHeader />
+  <main id="conteudo" class="page nf">
+    <h1>Não existe edição neste endereço</h1>
+    <p>O dia pode não ter tido resumo, ou o link está incompleto.</p>
+    <p><a href={withBase("")}>Abrir a edição mais recente</a> ou <a href={withBase("arquivo/")}>ver todas as edições</a>.</p>
   </main>
 </Base>
 <style>
-  .nf { padding-top: 4rem; }
-  h1 { font-size: var(--t-xl); font-stretch: 115%; }
+  .nf { padding-top: 2.5rem; max-width: 40rem; }
+  h1 { font: 500 2rem/1.1 var(--serif); }
+  a { text-decoration: underline; }
 </style>

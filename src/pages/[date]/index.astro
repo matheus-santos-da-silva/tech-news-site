@@ -1,0 +1,15 @@
+---
+import Base from "../../layouts/Base.astro";
+import DayHeader from "../../components/DayHeader.astro";
+import DigestView from "../../components/DigestView.astro";
+import { allDigests, fullDate, type Digest } from "../../lib/digests";
+
+export function getStaticPaths() {
+  return allDigests().map((digest) => ({ params: { date: digest.date }, props: { digest } }));
+}
+const { digest } = Astro.props as { digest: Digest };
+---
+<Base title={`Tech News, ${fullDate(digest.date)}`} description={digest.tldr[0]?.text.replace(/\*\*|`/g, "") ?? ""}>
+  <DayHeader date={digest.date} count={digest.items.length} />
+  <DigestView digest={digest} />
+</Base>

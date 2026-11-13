@@ -1,0 +1,110 @@
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/source-serif-4/opsz.css";
+
+:root {
+  --paper: #f3f5f8;
+  --surface: #ffffff;
+  --ink: #1a2233;
+  --muted: #5b6578;
+  --line: #d9dee7;
+  --soft: #e7ebf1;
+  --focus: #2747c9;
+
+  --s-ia: #2747c9;
+  --s-linguagens: #6b40b8;
+  --s-mercado: #8f5400;
+  --s-seguranca: #b42318;
+  --s-brasil: #0b7a3b;
+
+  --sans: "Archivo Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: "Source Serif 4 Variable", Georgia, "Times New Roman", serif;
+
+  /* escala modular 1.25 */
+  --t-xs: 0.8rem;
+  --t-sm: 0.9rem;
+  --t-md: 1.0625rem;
+  --t-lg: 1.3rem;
+  --t-xl: 1.6rem;
+
+  --measure: 44rem;
+  --gutter: 1rem;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #10141c;
+    --surface: #171c26;
+    --ink: #e6eaf2;
+    --muted: #9aa4b5;
+    --line: #2a3242;
+    --soft: #1e2532;
+    --focus: #8ea2ff;
+
+    --s-ia: #8ea2ff;
+    --s-linguagens: #c0a2f2;
+    --s-mercado: #e7b04d;
+    --s-seguranca: #ff8a7d;
+    --s-brasil: #5fcf8a;
+    color-scheme: dark;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--t-md);
+  line-height: 1.5;
+  font-optical-sizing: auto;
+}
+
+.wrap {
+  width: 100%;
+  max-width: calc(var(--measure) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+a { color: inherit; text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+code {
+  font-family: ui-monospace, "Cascadia Code", "SF Mono", Consolas, monospace;
+  font-size: 0.86em;
+  background: var(--soft);
+  padding: 0.08em 0.32em;
+  border-radius: 4px;
+  overflow-wrap: anywhere;
+}
+
+strong { font-weight: 650; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+[data-section="ia"] { --sc: var(--s-ia); }
+[data-section="linguagens"] { --sc: var(--s-linguagens); }
+[data-section="mercado"] { --sc: var(--s-mercado); }
+[data-section="seguranca"] { --sc: var(--s-seguranca); }
+[data-section="brasil"] { --sc: var(--s-brasil); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; }

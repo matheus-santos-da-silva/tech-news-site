@@ -1,0 +1,44 @@
+---
+// Renderiza o subconjunto aceito no conteúdo: `código` e **negrito**.
+// Tudo vira nó de texto escapado pelo Astro. Nunca usar set:html com conteúdo do agente.
+interface Props { text: string; as?: "p" | "span" }
+const { text, as = "span" } = Astro.props;
+
+type Code = { t: "text" | "code"; v: string };
+type Tok = Code | { t: "bold"; v: Code[] };
+
+// `código` pode aparecer dentro de **negrito**; negrito dentro de código não é interpretado.
+function codeTokens(s: string): Code[] {
+  const out: Code[] = [];
+  let last = 0;
+  for (const m of s.matchAll(/`([^`]+)`/g)) {
+    if (m.index! > last) out.push({ t: "text", v: s.slice(last, m.index) });
+    out.push({ t: "code", v: m[1] });
+    last = m.index! + m[0].length;
+  }
+  if (last < s.length) out.push({ t: "text", v: s.slice(last) });
+  return out;
+}
+function tokens(s: string): Tok[] {
+  const out: Tok[] = [];
+  // negrito: **...** sem atravessar outro **; o conteúdo pode ter `código`.
+  const re = /`[^`]+`|\*\*((?:(?!\*\*)[\s\S])+?)\*\*/g;
+  let last = 0;
+  for (const m of s.matchAll(re)) {
+    if (m.index! > last) out.push(...codeTokens(s.slice(last, m.index)));
+    out.push(m[1] !== undefined ? { t: "bold", v: codeTokens(m[1]) } : { t: "code", v: m[0].slice(1, -1) });
+    last = m.index! + m[0].length;
+  }
+  if (last < s.length) out.push(...codeTokens(s.slice(last)));
+  return out;
+}
+const paragraphs = (as === "p" ? text.split(/\n{2,}/) : [text]).map(tokens);
+const Tag = as;
+---
+{paragraphs.map((toks) => (
+  <Tag>{toks.map((k) =>
+    k.t === "bold"
+      ? <strong>{k.v.map((c) => (c.t === "code" ? <code>{c.v}</code> : c.v))}</strong>
+      : k.t === "code" ? <code>{k.v}</code> : k.v
+  )}</Tag>
+))}

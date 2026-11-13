@@ -1,0 +1,275 @@
+---
+import RichText from "./RichText.astro";
+import { SECTIONS, hostOf, itemUrl, shortDate, type Digest } from "../lib/digests";
+
+interface Props { digest: Digest }
+const { digest } = Astro.props;
+
+const bySection = SECTIONS.map((s) => ({ ...s, items: digest.items.filter((i) => i.section === s.id) }));
+const sectionOf = new Map(digest.items.map((i) => [i.id, i.section]));
+---
+<main id="conteudo">
+  <section class="wrap tldr" aria-labelledby="tldr-h">
+    <h2 id="tldr-h">O essencial do dia</h2>
+    <ul>
+      {digest.tldr.map((t) => (
+        <li data-section={t.itemId ? sectionOf.get(t.itemId) : undefined}>
+          {t.itemId ? (
+            <a href={`#${t.itemId}`}><RichText text={t.text} /></a>
+          ) : (
+            <RichText text={t.text} />
+          )}
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <nav class="sections" aria-label="Seções">
+    <div class="wrap">
+      <ul>
+        {bySection.map((s) => (
+          <li data-section={s.id}>
+            <a href={`#${s.id}`}>{s.name} <span class="c">{s.items.length}</span></a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </nav>
+
+  {bySection.map((s) => (
+    <section class="wrap section" id={s.id} data-section={s.id} aria-labelledby={`${s.id}-h`}>
+      <h2 id={`${s.id}-h`} class="section-h">{s.name}</h2>
+      {s.items.length === 0 ? (
+        <p class="empty">Nada relevante hoje.</p>
+      ) : s.items.map((it) => (
+        <article class="item" id={it.id} aria-labelledby={`${it.id}-t`}>
+          {it.image && (
+            <figure class="cover">
+              <img data-cover src={it.image} alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+            </figure>
+          )}
+          <div class="body">
+            {(it.breaking || it.followUp) && (
+              <p class="flags">
+                {it.breaking && <span class="flag breaking">Quebra compatibilidade</span>}
+                {it.followUp && (
+                  <a class="flag update" href={itemUrl(it.followUp.previousId)}>
+                    Atualização de {shortDate(it.followUp.previousId.slice(0, 10))}
+                  </a>
+                )}
+              </p>
+            )}
+            <h3 id={`${it.id}-t`}><a href={`#${it.id}`}>{it.title}</a></h3>
+            {it.followUp && <p class="changed"><strong>O que mudou:</strong> <RichText text={it.followUp.whatChanged} /></p>}
+            <div class="summary"><RichText as="p" text={it.summary} /></div>
+            <p class="why"><strong>Por que importa:</strong> <RichText text={it.whyItMatters} /></p>
+            <p class="sources">
+              {it.sources.map((src) => (
+                <a href={src.url} rel="noopener noreferrer nofollow" target="_blank">
+                  {src.name}<span class="host"> ({hostOf(src.url)})</span>
+                </a>
+              ))}
+            </p>
+            {it.tags.length > 0 && (
+              <ul class="tags" aria-label="Tags">
+                {it.tags.map((t) => <li>{t}</li>)}
+              </ul>
+            )}
+          </div>
+        </article>
+      ))}
+    </section>
+  ))}
+
+  {digest.toRead.length > 0 && (
+    <section class="wrap to-read" aria-labelledby="ler-h">
+      <h2 id="ler-h" class="section-h">Para ler com calma</h2>
+      <ul>
+        {digest.toRead.map((r) => (
+          <li>
+            <a href={r.url} rel="noopener noreferrer nofollow" target="_blank">{r.title}</a>
+            <span class="host">{hostOf(r.url)}</span>
+            <RichText as="p" text={r.note} />
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</main>
+
+<style>
+  h2, h3 { margin: 0; }
+
+  /* ---- essencial */
+  .tldr {
+    margin-top: 1.75rem;
+  }
+  .tldr h2 {
+    font-size: var(--t-lg);
+    font-weight: 750;
+    font-stretch: 110%;
+    margin-bottom: 0.75rem;
+  }
+  .tldr ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    font-family: var(--serif);
+    font-size: 1.08rem;
+    line-height: 1.5;
+  }
+  .tldr li {
+    padding-left: 1rem;
+    border-left: 3px solid var(--sc, var(--line));
+  }
+  .tldr a { text-decoration: none; }
+  .tldr a:hover { text-decoration: underline; }
+
+  /* ---- navegação por seção */
+  .sections {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin-top: 2rem;
+    background: color-mix(in srgb, var(--paper) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-block: 1px solid var(--line);
+  }
+  .sections ul {
+    list-style: none;
+    margin: 0;
+    padding: 0.55rem 0;
+    display: flex;
+    gap: 1.1rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    white-space: nowrap;
+    font-size: var(--t-sm);
+  }
+  .sections a {
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .sections a::before {
+    content: "";
+    width: 0.55rem; height: 0.55rem;
+    border-radius: 2px;
+    background: var(--sc);
+  }
+  .sections .c { color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+  @media (min-width: 46rem) {
+    .sections ul { flex-wrap: wrap; row-gap: 0.35rem; overflow: visible; }
+  }
+
+  /* ---- seções */
+  .section { margin-top: 3rem; }
+  .section-h {
+    font-size: var(--t-xl);
+    font-weight: 800;
+    font-stretch: 118%;
+    letter-spacing: -0.01em;
+    color: var(--sc, var(--ink));
+    padding-bottom: 0.5rem;
+    border-bottom: 3px solid var(--sc, var(--ink));
+  }
+  .empty { color: var(--muted); font-style: italic; font-family: var(--serif); }
+
+  /* ---- notícia */
+  .item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding-block: 1.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .item:last-child { border-bottom: 0; }
+  .item:target h3 a { background: color-mix(in srgb, var(--sc) 14%, transparent); }
+
+  .cover {
+    margin: 0;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--soft);
+  }
+  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  @media (min-width: 46rem) {
+    .item:has(.cover) { grid-template-columns: 1fr 13rem; }
+    .cover { order: 2; aspect-ratio: 4 / 3; align-self: start; margin-top: 0.3rem; }
+  }
+
+  .flags { margin: 0 0 0.45rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .flag {
+    font-size: var(--t-xs);
+    font-weight: 650;
+    padding: 0.12rem 0.5rem;
+    border-radius: 999px;
+    text-decoration: none;
+  }
+  .breaking { background: color-mix(in srgb, var(--s-seguranca) 14%, transparent); color: var(--s-seguranca); }
+  .update { background: var(--soft); color: var(--ink); }
+  .update:hover { text-decoration: underline; }
+
+  h3 {
+    font-size: var(--t-lg);
+    font-weight: 700;
+    font-stretch: 104%;
+    line-height: 1.22;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+  h3 a { text-decoration: none; border-radius: 3px; }
+  h3 a:hover { text-decoration: underline; }
+
+  .summary { font-family: var(--serif); font-size: 1.06rem; line-height: 1.62; }
+  .summary :global(p) { margin: 0.6rem 0 0; }
+  .changed { margin: 0.5rem 0 0; font-size: var(--t-sm); }
+
+  .why {
+    margin: 0.85rem 0 0;
+    padding: 0.6rem 0.85rem;
+    background: color-mix(in srgb, var(--sc) 8%, var(--surface));
+    border-left: 3px solid var(--sc);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.97rem;
+    line-height: 1.5;
+  }
+  .why > strong { color: var(--sc); }
+
+  .sources {
+    margin: 0.8rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    font-size: var(--t-sm);
+  }
+  .sources a { font-weight: 600; }
+  .host { color: var(--muted); font-weight: 400; }
+
+  .tags {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    font-size: var(--t-xs);
+    color: var(--muted);
+  }
+  .tags li { border: 1px solid var(--line); border-radius: 999px; padding: 0.05rem 0.5rem; }
+
+  /* ---- para ler */
+  .to-read { margin-top: 3rem; }
+  .to-read ul { list-style: none; padding: 0; margin: 0.5rem 0 0; }
+  .to-read li { padding-block: 0.9rem; border-bottom: 1px solid var(--line); }
+  .to-read li:last-child { border-bottom: 0; }
+  .to-read a { font-weight: 650; }
+  .to-read .host { margin-left: 0.5rem; font-size: var(--t-xs); }
+  .to-read :global(p) { margin: 0.25rem 0 0; font-family: var(--serif); color: var(--muted); }
+</style>

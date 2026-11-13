@@ -1,0 +1,20 @@
+{
+  "name": "tech-news-site",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "validate": "node scripts/validate-content.mjs",
+    "images": "node scripts/fetch-images.mjs",
+    "dev": "astro dev",
+    "build": "npm run validate && astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@fontsource-variable/archivo": "5.3.0",
+    "@fontsource-variable/source-serif-4": "5.3.1",
+    "astro": "7.4.11"
+  }
+}

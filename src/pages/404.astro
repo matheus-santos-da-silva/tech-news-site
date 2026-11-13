@@ -1,0 +1,15 @@
+---
+import Base from "../layouts/Base.astro";
+import { withBase } from "../lib/digests";
+---
+<Base title="Página não encontrada · Tech News" description="Página não encontrada.">
+  <main id="conteudo" class="wrap nf">
+    <h1>Não existe resumo neste endereço</h1>
+    <p>O dia pode não ter tido resumo ou o link está incompleto.</p>
+    <p><a href={withBase("")}>Abrir o resumo mais recente</a> ou <a href={withBase("arquivo/")}>ver todos os dias</a>.</p>
+  </main>
+</Base>
+<style>
+  .nf { padding-top: 4rem; }
+  h1 { font-size: var(--t-xl); font-stretch: 115%; }
+</style>

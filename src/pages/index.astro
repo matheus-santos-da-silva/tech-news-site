@@ -1,0 +1,13 @@
+---
+import Base from "../layouts/Base.astro";
+import DayHeader from "../components/DayHeader.astro";
+import DigestView from "../components/DigestView.astro";
+import { allDigests } from "../lib/digests";
+
+// A home é o digest mais recente (mesma página de /AAAA-MM-DD/).
+const digest = allDigests()[0];
+---
+<Base title="Tech News: resumo diário de tecnologia" description="As notícias de tecnologia do dia para devs, em português.">
+  <DayHeader date={digest.date} count={digest.items.length} />
+  <DigestView digest={digest} />
+</Base>

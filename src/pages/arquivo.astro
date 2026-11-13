@@ -1,0 +1,78 @@
+---
+import Base from "../layouts/Base.astro";
+import RichText from "../components/RichText.astro";
+import { allDigests, dayUrl, weekday, withBase } from "../lib/digests";
+
+const all = allDigests();
+const byMonth = new Map<string, typeof all>();
+for (const d of all) {
+  const ym = d.date.slice(0, 7);
+  if (!byMonth.has(ym)) byMonth.set(ym, []);
+  byMonth.get(ym)!.push(d);
+}
+const monthLabel = (ym: string) =>
+  new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC", month: "long", year: "numeric" }).format(new Date(`${ym}-15T12:00:00Z`));
+---
+<Base title="Todos os dias · Tech News" description="Arquivo de todos os resumos diários de tecnologia.">
+  <header class="wrap head">
+    <a class="brand" href={withBase("")}>Tech News</a>
+    <h1>Todos os dias</h1>
+    <p>{all.length} resumos, do mais recente ao mais antigo.</p>
+  </header>
+  <main id="conteudo" class="wrap">
+    {[...byMonth].map(([ym, days]) => (
+      <section aria-labelledby={`m-${ym}`}>
+        <h2 id={`m-${ym}`}>{monthLabel(ym)}</h2>
+        <ol>
+          {days.map((d) => (
+            <li>
+              <a href={dayUrl(d.date)}>
+                <span class="day">{Number(d.date.slice(8))}</span>
+                <span class="meta">{weekday(d.date)}, {d.items.length} notícias</span>
+                <span class="lead"><RichText text={d.tldr[0].text} /></span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </main>
+</Base>
+
+<style>
+  .head { padding-top: 1rem; }
+  .brand { font-weight: 750; font-stretch: 112%; text-decoration: none; }
+  h1 {
+    margin: 2.25rem 0 0.25rem;
+    font-size: clamp(2.5rem, 9vw, 4.5rem);
+    font-weight: 800;
+    font-stretch: 125%;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+  }
+  .head p { color: var(--muted); margin: 0.5rem 0 0; }
+  h2 { margin: 2.5rem 0 0.5rem; font-size: var(--t-lg); font-weight: 750; }
+  h2::first-letter { text-transform: uppercase; }
+  ol { list-style: none; margin: 0; padding: 0; }
+  li { border-top: 1px solid var(--line); }
+  li a {
+    display: grid;
+    grid-template-columns: 3.25rem 1fr;
+    grid-template-areas: "day meta" "day lead";
+    gap: 0.1rem 0.75rem;
+    padding: 0.9rem 0;
+    text-decoration: none;
+  }
+  li a:hover .lead { text-decoration: underline; }
+  .day {
+    grid-area: day;
+    font-size: 2rem;
+    font-weight: 800;
+    font-stretch: 125%;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .meta { grid-area: meta; font-size: var(--t-sm); color: var(--muted); }
+  .meta::first-letter { text-transform: uppercase; }
+  .lead { grid-area: lead; font-family: var(--serif); line-height: 1.45; }
+</style>

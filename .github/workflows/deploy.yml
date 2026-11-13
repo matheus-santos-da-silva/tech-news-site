@@ -1,0 +1,82 @@
+name: Publicar site
+
+on:
+  schedule:
+    - cron: "45 11 * * *" # 08:45 em Brasília, depois da routine das 08:00
+    - cron: "0 13 * * *"  # 10:00 em Brasília, segunda chance se a routine atrasar
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Baixar o site
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Deploy key somente leitura, válida só para o repo de conteúdo.
+      # Só a pasta digests/ é baixada; nada do repo de conteúdo é executado.
+      - name: Baixar os digests (somente leitura)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: matheus-santos-da-silva/tech-news
+          ssh-key: ${{ secrets.CONTENT_DEPLOY_KEY }}
+          path: content
+          sparse-checkout: digests
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      # Se algum digest for inválido, o job para aqui e o site publicado continua o anterior.
+      - name: Validar digests
+        run: npm run validate
+
+      - name: Restaurar cache de imagens
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache
+          key: images-${{ github.run_id }}
+          restore-keys: images-
+
+      - name: Buscar imagens de capa
+        run: npm run images
+        continue-on-error: true # sem imagem o site funciona; o card usa o fallback
+
+      - name: Build
+        run: npx astro build
+
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

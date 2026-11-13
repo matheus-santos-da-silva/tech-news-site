@@ -1,0 +1,72 @@
+---
+import "../styles/global.css";
+import { withBase } from "../lib/digests";
+
+interface Props { title: string; description: string }
+const { title, description } = Astro.props;
+
+// Sem scripts ou estilos inline; imagens externas só por https (capas das notícias).
+const csp = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self'",
+  "img-src 'self' https: data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'none'",
+  "upgrade-insecure-requests",
+].join("; ");
+---
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content={csp} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href={withBase("favicon.svg")} type="image/svg+xml" />
+    <link rel="alternate" type="application/rss+xml" title="Tech News" href={withBase("rss.xml")} />
+    <script src={withBase("js/covers.js")} is:inline></script>
+  </head>
+  <body>
+    <a class="skip visually-hidden" href="#conteudo">Pular para as notícias</a>
+    <slot />
+    <footer class="wrap site-footer">
+      <p>
+        Resumo diário gerado por IA a partir das fontes citadas em cada notícia. Confira a fonte antes de tomar decisões.
+      </p>
+      <p>
+        <a href={withBase("arquivo/")}>Todos os dias</a>
+        <span aria-hidden="true">/</span>
+        <a href={withBase("rss.xml")}>RSS</a>
+        <span aria-hidden="true">/</span>
+        <a href={withBase("api/index.json")}>JSON</a>
+      </p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .skip:focus {
+    position: fixed !important;
+    top: 0.5rem; left: 0.5rem;
+    width: auto; height: auto; clip: auto;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface);
+    z-index: 10;
+  }
+  .site-footer {
+    margin-top: 4rem;
+    padding-block: 2rem 3rem;
+    color: var(--muted);
+    font-size: var(--t-sm);
+    border-top: 1px solid var(--line);
+  }
+  .site-footer p { margin: 0 0 0.5rem; }
+  .site-footer span { margin-inline: 0.4rem; }
+</style>
